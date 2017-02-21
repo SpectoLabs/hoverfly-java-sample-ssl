@@ -1,0 +1,3 @@
+k8s:
+  namespace: default
+  baseUrl: http://localhost:8001
