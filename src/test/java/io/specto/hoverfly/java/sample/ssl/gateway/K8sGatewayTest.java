@@ -35,7 +35,7 @@ public class K8sGatewayTest {
                     .sslKeyPath("ssl/ca.key"));
 
     @Test
-    public void shouldBeToCallHttpsServerUsingSelfSignedCertificate() throws Exception {
+    public void shouldBeAbleToCallHttpsServerUsingSelfSignedCertificate() throws Exception {
 
         hoverflyRule.simulate(dsl(
                 service("https://kubernetes")
