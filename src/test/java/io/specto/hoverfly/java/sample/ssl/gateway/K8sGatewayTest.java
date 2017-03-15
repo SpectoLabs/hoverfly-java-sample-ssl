@@ -1,18 +1,18 @@
 package io.specto.hoverfly.java.sample.ssl.gateway;
 
 
+import io.specto.hoverfly.java.sample.ssl.model.K8sService;
+import io.specto.hoverfly.java.sample.ssl.model.Metadata;
+import io.specto.hoverfly.java.sample.ssl.model.Spec;
+import io.specto.hoverfly.junit.dsl.HttpBodyConverter;
 import io.specto.hoverfly.junit.rule.HoverflyRule;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import static io.specto.hoverfly.junit.core.HoverflyConfig.configs;
 import static io.specto.hoverfly.junit.core.SimulationSource.dsl;
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class K8sGatewayTest {
 
     @Autowired
-    private RestTemplate k8sRestTemplate;
+    private K8sGateway k8sGateway;
 
     @ClassRule
     public static HoverflyRule hoverflyRule = HoverflyRule.inSimulationMode(
@@ -37,19 +37,18 @@ public class K8sGatewayTest {
     @Test
     public void shouldBeAbleToCallHttpsServerUsingSelfSignedCertificate() throws Exception {
 
+        // Given
+        K8sService expected = new K8sService(new Metadata("hoverfly", "some-uuid", "default"), new Spec());
         hoverflyRule.simulate(dsl(
                 service("https://kubernetes")
-                        .get("/api/version")
-                        .willReturn(success("v1.5", MediaType.TEXT_PLAIN_VALUE))
+                        .get("/api/v1/namespaces/default/services/hoverfly")
+                        .willReturn(success(HttpBodyConverter.json(expected)))
         ));
 
-
         // When
-        ResponseEntity<String> response = k8sRestTemplate.getForEntity("https://kubernetes/api/version", String.class);
+        K8sService actual = k8sGateway.getService("hoverfly");
 
         // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo("v1.5");
-
+        assertThat(actual).isEqualTo(expected);
     }
 }

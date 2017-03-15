@@ -1,4 +1,4 @@
 k8s:
   namespace: default
-  baseUrl: http://localhost:8001
+  baseUrl: https://kubernetes
   caCertPath: src/test/resources/ssl/ca.crt
